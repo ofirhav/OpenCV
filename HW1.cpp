@@ -5,7 +5,7 @@
 using namespace cv;
 using namespace std;
 
-void showFor(Mat image)
+Mat showFor(Mat image)
 {
 	Mat padded;                            //expand input image to optimal size
 	int m = getOptimalDFTSize(image.rows);
@@ -50,17 +50,48 @@ void showFor(Mat image)
 
 	normalize(magI, magI, 0, 1, CV_MINMAX); // Transform the matrix with float values into a
 											// viewable image form (float between values 0 and 1).
-
-	imshow("spectrum magnitude", magI);
-	waitKey();
-	destroyWindow("spectrum magnitude");
+	return magI;
 }
 
-void applyFilter()
+int applyfiltering(Mat image, Mat Fourier, int filterType, int setting)
+{	
+	imshow("Display window", image);
+	createTrackbar("D0", "Display window", 0, 255, 0);
+	createTrackbar("n", "Display window", 0, 255, 0);
+	waitKey(0);
+	return 0;
+}
+
+int applyFilter(Mat image, Mat fourier)
 {
+	int filterType;
 	cout << "Please choose type of filter: \n1.Low \n2.High \n3.Quit" << endl;
-
+	cin >> filterType;
+	if (filterType == 3)
+		return 0;
+	else if (filterType == 1 || filterType == 2)
+	{
+		int setting;
+		cout << "Please choose type of setting: \n1.Ideal \n2.Butterworth \n3.Gaussian \n4.Quit" << endl;
+		cin >> setting;
+		if (setting == 1 || setting == 2 || setting == 3)
+			applyfiltering(image, fourier, filterType, setting);
+		else if (setting == 4)
+			return 0;
+		else
+		{
+			cout << " Invalid input" << endl;
+			return 0;
+		}
+	}
+	else
+	{
+		cout << " Invalid input" << endl;
+		return 0;
+	}
 }
+
+
 
 int main(int argc, char** argv)
 {
@@ -73,6 +104,7 @@ int main(int argc, char** argv)
 	while (true)
 	{
 		Mat image;
+		Mat fourier;
 		image = imread(argv[1], CV_LOAD_IMAGE_GRAYSCALE);   // Read the file
 
 		cout << "Please choose an option: \n1.Show Original Image \n2.Show Power Spectrum \n3.Apply A Filter\n4.Quit" << endl;
@@ -94,16 +126,19 @@ int main(int argc, char** argv)
 		}
 		else if (input == 2)
 		{
-			showFor(image);
+			fourier = showFor(image);
+			imshow("spectrum magnitude", fourier);
+			waitKey();
+			destroyWindow("spectrum magnitude");
 		}
 		else if (input == 3)
-			applyFilter();
+			applyFilter(image,fourier);
 		else if (input == 4)
 			return 0;
 		else 
 			cout << " Invalid input" << endl;
 	}
-	//createTrackbar("Ofir", "Display window", 0, 1, 0);
+	
 	waitKey(0);                                          // Wait for a keystroke in the window
 	return 0;
 }
